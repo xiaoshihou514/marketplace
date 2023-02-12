@@ -1,3 +1,5 @@
 # test/vendor/*/
 # Will add tests if they turned out necessary
 test/
+.github/
+.gitmodules
