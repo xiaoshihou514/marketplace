@@ -1,17 +1,13 @@
 local remote = {}
-remote.cert_path = nil
-local suffix = " > dev/null"
+local suffix = " 2>dev/null"
+remote.curl = "curl -s "
 function remote.request(url)
 	local handle = nil
-	if remote.cert_path ~= nil then
-		handle = io.popen("curl -s --cacert " .. remote.cert_path .. " " .. url .. suffix)
-	else
-		handle = io.popen("curl -s " .. url .. suffix)
-	end
+	handle = io.popen(remote.curl .. url .. suffix)
 	if handle == nil then
 		return ""
 	end
-	local response = handle:read("*a")
+	local response = handle:read("*all")
 	handle:close()
 	return response
 end
