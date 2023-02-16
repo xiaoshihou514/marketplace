@@ -13,6 +13,12 @@ ui.dims = {
 		width = 40,
 	},
 }
+ui.colors = {
+	pkg = "#56b6c2",
+	star = "#e5b84e",
+	issue = "#be95ff",
+	time = "#229a58",
+}
 
 local function create_popup_window_opts(height, width)
 	-- display dims
@@ -40,12 +46,12 @@ function ui.init_buf_if_nil()
 	if ui.popupbuf == nil then
 		ui.popupbuf = vim.api.nvim_create_buf(false, true)
 		vim.api.nvim_buf_set_option(ui.popupbuf, "modifiable", false)
-		vim.api.nvim_buf_set_name(ui.popupbuf, "Nvim Marketplace")
+		vim.api.nvim_buf_set_name(ui.popupbuf, "Marketplace")
 	end
 	if ui.sidebuf == nil then
 		ui.sidebuf = vim.api.nvim_create_buf(false, true)
 		vim.api.nvim_buf_set_option(ui.sidebuf, "modifiable", false)
-		vim.api.nvim_buf_set_name(ui.sidebuf, "Nvim Marketplace")
+		vim.api.nvim_buf_set_name(ui.sidebuf, "Marketplace README")
 	end
 end
 
@@ -54,7 +60,7 @@ function ui.spawn_popup(text)
 	ui.init_buf_if_nil()
 	ui.set_text(text, ui.popupbuf)
 	-- display the buffer
-	vim.api.nvim_open_win(ui.popupbuf, true, create_popup_window_opts(ui.dims.height, ui.dims.width))
+	vim.api.nvim_open_win(ui.popupbuf, true, create_popup_window_opts(ui.dims.popup.height, ui.dims.popup.width))
 end
 
 function ui.spawn_side(text)
@@ -74,6 +80,22 @@ function ui.spawn_side(text)
 	-- swap out buffer
 	local win = vim.api.nvim_get_current_win()
 	vim.api.nvim_win_set_buf(win, ui.sidebuf)
+	vim.api.nvim_win_set_option(win, "wrap", true)
+end
+
+function ui.create_hl_groups()
+	vim.cmd("highlight marketplace_pkg guifg=" .. ui.colors.pkg)
+	vim.cmd("highlight marketplace_star guifg=" .. ui.colors.star)
+	vim.cmd("highlight marketplace_issue guifg=" .. ui.colors.issue)
+	vim.cmd("highlight marketplace_time guifg=" .. ui.colors.time)
+end
+
+function ui.highlight_glyphs()
+	local symbols = require("marketplace.parser").symbols
+	vim.fn.matchadd("marketplace_pkg", symbols.pkg)
+	vim.fn.matchadd("marketplace_star", symbols.star)
+	vim.fn.matchadd("marketplace_issue", symbols.issue)
+	vim.fn.matchadd("marketplace_time", symbols.time)
 end
 
 function ui.set_text(text, buf)
