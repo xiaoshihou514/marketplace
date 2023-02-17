@@ -81,6 +81,7 @@ function ui.spawn_side(text)
 	local win = vim.api.nvim_get_current_win()
 	vim.api.nvim_win_set_buf(win, ui.sidebuf)
 	vim.api.nvim_win_set_option(win, "wrap", true)
+	vim.api.nvim_win_set_option(win, "number", false)
 end
 
 function ui.create_hl_groups()
@@ -100,8 +101,24 @@ end
 
 function ui.set_text(text, buf)
 	ui.init_buf_if_nil()
+	vim.api.nvim_buf_set_option(buf, "modifiable", true)
 	vim.api.nvim_buf_set_lines(buf, 0, -1, true, text)
+	vim.api.nvim_buf_set_option(buf, "modifiable", false)
 end
 
-function ui.insert_mappings(mappings) end
+function ui.insert_mappings()
+	vim.api.nvim_buf_set_keymap(ui.sidebuf, "n", "<CR>", function()
+		local symbols = require("marketplace.parser").symbols
+		local on_line = vim.api.nvim_get_current_line()
+		if string.find(on_line, symbols.pkg) and string.find(on_line, symbols.star) then
+			-- plugin line
+		elseif string.find(on_line, symbols.time) and string.find(on_line, symbols.issue) then
+			-- issue & update time line
+		elseif string.find(on_line, symbols.separator) then
+			-- separator, do nothing
+		else
+			-- description line
+		end
+	end, { noremap = true, silent = true })
+end
 return ui

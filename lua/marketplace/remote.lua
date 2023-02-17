@@ -1,7 +1,14 @@
 local remote = {}
-local suffix = " 2>dev/null"
+local suffix = " 2>/dev/null"
 
 remote.curl = "curl -s "
+remote.url_list = {
+	plugins = "https://nvim.sh/s",
+	tags = "https://nvim.sh/t",
+	search_plugin = "https://nvim.sh/s/",
+	search_tag = "https://nvim.sh/t/",
+	rawgit = "https://rawgithubusercontent.com/",
+}
 
 -- basically getting the raw txt
 function remote.request(url)
@@ -9,12 +16,11 @@ function remote.request(url)
 	if handle == nil then
 		return ""
 	end
-	local success, _, _ = handle:close()
-	if not success then
-		return ""
-	end
 	local response = handle:read("*all")
-	handle:close()
+	local success, _, _ = handle:close()
+	if not success or response == nil or response == "" then
+		vim.notify("Unable to get plugin list", vim.log.levels.WARN)
+	end
 	return response
 end
 

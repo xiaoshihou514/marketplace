@@ -4,15 +4,9 @@ parser.symbols = {
 	star = "",
 	issue = "",
 	time = "",
+	separator = "─",
 }
-local url_list = {
-	plugins = "https://nvim.sh/s",
-	tags = "https://nvim.sh/t",
-	search_plugin = "https://nvim.sh/s/",
-	search_tag = "https://nvim.sh/t/",
-	rawgit = "https://rawgithubusercontent.com/",
-}
-
+local url_list = require("marketplace.remote").url_list
 -- helper for parsing
 local function add_comp(result, column, component)
 	-- remove spaces, we would add them manually
@@ -40,6 +34,10 @@ end
 --      233  2023-01-31
 --     🌙 LunarVim is an IDE layer for Neovim. Completely free and community driven.
 function parser.parse_plugin_list(raw)
+	local separator = parser.symbols.separator
+	for _ = 1, require("marketplace.ui").dims.side.width - 3 do
+		separator = separator .. parser.symbols.separator
+	end
 	-- remove the first line
 	local temp = string.gsub(raw, "^.-\n", "", 1)
 	local res = ""
@@ -53,7 +51,7 @@ function parser.parse_plugin_list(raw)
 			col = col + 1
 		end
 		-- one for new line, another one for separating plugins
-		res = res .. "\n" .. "\n"
+		res = res .. "\n" .. separator .. "\n"
 	end
 	return res
 end

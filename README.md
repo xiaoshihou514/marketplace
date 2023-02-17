@@ -18,4 +18,4 @@
 - create the popup and the side view
 
 ## Does it work yet?
-    - No
+    - Not really
