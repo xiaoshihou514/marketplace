@@ -35,7 +35,7 @@ end
 --     🌙 LunarVim is an IDE layer for Neovim. Completely free and community driven.
 function parser.parse_plugin_list(raw)
 	local separator = parser.symbols.separator
-	for _ = 1, require("marketplace.ui").dims.side.width - 3 do
+	for _ = 1, require("marketplace.ui").sizes.side.width - 3 do
 		separator = separator .. parser.symbols.separator
 	end
 	-- remove the first line
@@ -74,5 +74,11 @@ function parser.get_readme(str)
 	res:insert(url_list.rawgit .. str .. "/main/README")
 	res:insert(url_list.rawgit .. str .. "/main/README.txt")
 	return res
+end
+
+-- use tools like mdcat to beautify markdown
+-- by default it does nothing
+function parser.proc_readme(markdown)
+	return markdown
 end
 return parser

@@ -20,6 +20,7 @@ function remote.request(url)
 	local success, _, _ = handle:close()
 	if not success or response == nil or response == "" then
 		vim.notify("Unable to get plugin list", vim.log.levels.WARN)
+		return ""
 	end
 	return response
 end

@@ -4,7 +4,7 @@ local ui = {}
 ui.popupbuf = nil
 ui.sidebuf = nil
 -- since window objects get destroyed after :q, we spawn new ones on call
-ui.dims = {
+ui.sizes = {
 	popup = {
 		height = 35,
 		width = 120,
@@ -19,6 +19,21 @@ ui.colors = {
 	issue = "#be95ff",
 	time = "#229a58",
 }
+ui.action = function(plugin)
+	local urls = require("marketplace.parser").get_readme(plugin)
+	local response = nil
+	for url in urls do
+		response = require("marketplace.remote").request(url)
+		if response ~= "" then
+			break
+		end
+	end
+	if response == "" then
+		vim.notify("Unable to get README for the plugin...", vim.log.levels.WARN)
+	else
+		ui.spawn_popup(require("marketplace.parser").proc_readme(response))
+	end
+end
 
 local function create_popup_window_opts(height, width)
 	-- display dims
@@ -60,7 +75,7 @@ function ui.spawn_popup(text)
 	ui.init_buf_if_nil()
 	ui.set_text(text, ui.popupbuf)
 	-- display the buffer
-	vim.api.nvim_open_win(ui.popupbuf, true, create_popup_window_opts(ui.dims.popup.height, ui.dims.popup.width))
+	vim.api.nvim_open_win(ui.popupbuf, true, create_popup_window_opts(ui.sizes.popup.height, ui.sizes.popup.width))
 end
 
 function ui.spawn_side(text)
@@ -74,7 +89,7 @@ function ui.spawn_side(text)
 		right = true
 	end
 	vim.opt.splitright = not right
-	vim.cmd(ui.dims.side.width .. " vsplit")
+	vim.cmd(ui.sizes.side.width .. " vsplit")
 	vim.opt.splitright = right
 
 	-- swap out buffer
@@ -106,19 +121,43 @@ function ui.set_text(text, buf)
 	vim.api.nvim_buf_set_option(buf, "modifiable", false)
 end
 
+ui.buf_action = function()
+	local symbols = require("marketplace.parser").symbols
+	local on_line = vim.api.nvim_get_current_line()
+	if string.find(on_line, symbols.pkg) and string.find(on_line, symbols.star) then
+		-- plugin line
+		ui.action(string.match(on_line, symbols.pkg .. " %s([^%s]+)"))
+	elseif string.find(on_line, symbols.time) and string.find(on_line, symbols.issue) then
+		-- issue & update time line
+		-- get the line above
+		on_line = vim.api.nvim_buf_get_lines(
+			0,
+			vim.api.nvim_win_get_cursor(0)[1] - 2,
+			vim.api.nvim_win_get_cursor(0)[1] - 1,
+			false
+		)[1]
+		ui.action(string.match(on_line, symbols.pkg .. " %s([^%s]+)"))
+	elseif string.find(on_line, symbols.separator) then
+		-- separator, do nothing
+	else
+		-- description line
+		-- get the line 2 lines above
+		on_line = vim.api.nvim_buf_get_lines(
+			0,
+			vim.api.nvim_win_get_cursor(0)[1] - 3,
+			vim.api.nvim_win_get_cursor(0)[1] - 2,
+			false
+		)[1]
+		ui.action(string.match(on_line, symbols.pkg .. " %s([^%s]+)"))
+	end
+end
 function ui.insert_mappings()
-	vim.api.nvim_buf_set_keymap(ui.sidebuf, "n", "<CR>", function()
-		local symbols = require("marketplace.parser").symbols
-		local on_line = vim.api.nvim_get_current_line()
-		if string.find(on_line, symbols.pkg) and string.find(on_line, symbols.star) then
-			-- plugin line
-		elseif string.find(on_line, symbols.time) and string.find(on_line, symbols.issue) then
-			-- issue & update time line
-		elseif string.find(on_line, symbols.separator) then
-			-- separator, do nothing
-		else
-			-- description line
-		end
-	end, { noremap = true, silent = true })
+	vim.api.nvim_buf_set_keymap(
+		ui.sidebuf,
+		"n",
+		"<CR>",
+		"<CMD>lua require('marketplace.ui').buf_action<CR>",
+		{ noremap = true, silent = true }
+	)
 end
 return ui
