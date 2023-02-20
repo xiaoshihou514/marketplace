@@ -113,8 +113,4 @@ function M.open()
 	ui.insert_mappings(ui.buf_action())
 end
 
-vim.api.nvim_create_user_command("Marketplace", function()
-	M.open()
-end, {})
-
 return M
