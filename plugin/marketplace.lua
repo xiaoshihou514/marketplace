@@ -15,6 +15,6 @@ vim.g.loaded_my_awesome_plugin = 1
 -- Be careful to not overuse this file!
 --
 -- :market
-local my_awesome_plugin = require("my_awesome_plugin")
+-- local my_awesome_plugin = require("my_awesome_plugin")
 
-vim.api.nvim_create_user_command("MyAwesomePluginGenericGreet", my_awesome_plugin.generic_greet, {})
+-- vim.api.nvim_create_user_command("MyAwesomePluginGenericGreet", my_awesome_plugin.generic_greet, {})
