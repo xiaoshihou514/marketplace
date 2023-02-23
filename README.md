@@ -1,21 +1,16 @@
 # WIP
 ## Goal:
-- vscode like builtin marketplace for neovim that finds plugins from nvim.sh
+- a gui for the neovim plugin ecosystem
 
-## Wishlist:
-- cutomizability on:
-    - curl options
-    - searching techniques(nvim.sh api, grep, rg or potentially telescope)
-- keybinds for:
-    - copying the lua code needed to install the plugin
-    - searching (maybe use vim apis to read from stdin)
-    - popup to see the project README (mdcat for better readability)
-- fetch project README
-- autocmds to add plugins to a list so there's a seamless experience
+## Todo:
+- use a terminal window for README preview
+- searching the plugins(grep, telescope)
+- documentation
+- actually install plugins(automatically put plugins in lua config files)
 
 ## Can now:
 - fetch the plugin list and parse it
-- create the popup and the side view
+- display the parsed plugin list on a side panel
 
 ## Does it work yet?
-    - Not really
+- You can now browse plugins from nvim.sh and browse raw README

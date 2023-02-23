@@ -6,11 +6,11 @@ ui.sidebuf = nil
 -- since window objects get destroyed after :q, we spawn new ones on call
 ui.sizes = {
 	popup = {
-		height = 35,
-		width = 120,
+		height = 28,
+		width = 100,
 	},
 	side = {
-		width = 40,
+		width = 42,
 	},
 }
 ui.colors = {
@@ -19,19 +19,25 @@ ui.colors = {
 	issue = "#be95ff",
 	time = "#229a58",
 }
+-- all the imports
+local parser = require("marketplace.parser")
+local remote = require("marketplace.remote")
 ui.action = function(plugin)
-	local urls = require("marketplace.parser").get_readme(plugin)
+	local urls = parser.get_readme_url(plugin)
+	if urls == nil then
+		return
+	end
 	local response = nil
-	for url in urls do
-		response = require("marketplace.remote").request(url)
-		if response ~= "" then
+	for _, url in ipairs(urls) do
+		response = remote.request(url)
+		if response ~= "" and string.sub(response, 1, 3) ~= "404" then
 			break
 		end
 	end
 	if response == "" then
 		vim.notify("Unable to get README for the plugin...", vim.log.levels.WARN)
 	else
-		ui.spawn_popup(require("marketplace.parser").proc_readme(response))
+		ui.spawn_popup(parser.to_table(parser.proc_readme(response)))
 	end
 end
 
@@ -61,12 +67,12 @@ function ui.init_buf_if_nil()
 	if ui.popupbuf == nil then
 		ui.popupbuf = vim.api.nvim_create_buf(false, true)
 		vim.api.nvim_buf_set_option(ui.popupbuf, "modifiable", false)
-		vim.api.nvim_buf_set_name(ui.popupbuf, "Marketplace")
+		vim.api.nvim_buf_set_name(ui.popupbuf, "Marketplace README")
 	end
 	if ui.sidebuf == nil then
 		ui.sidebuf = vim.api.nvim_create_buf(false, true)
 		vim.api.nvim_buf_set_option(ui.sidebuf, "modifiable", false)
-		vim.api.nvim_buf_set_name(ui.sidebuf, "Marketplace README")
+		vim.api.nvim_buf_set_name(ui.sidebuf, "Marketplace")
 	end
 end
 
@@ -96,6 +102,7 @@ function ui.spawn_side(text)
 	local win = vim.api.nvim_get_current_win()
 	vim.api.nvim_win_set_buf(win, ui.sidebuf)
 	vim.api.nvim_win_set_option(win, "wrap", true)
+	vim.api.nvim_win_set_option(win, "relativenumber", false)
 	vim.api.nvim_win_set_option(win, "number", false)
 end
 
@@ -107,7 +114,7 @@ function ui.create_hl_groups()
 end
 
 function ui.highlight_glyphs()
-	local symbols = require("marketplace.parser").symbols
+	local symbols = parser.symbols
 	vim.fn.matchadd("marketplace_pkg", symbols.pkg)
 	vim.fn.matchadd("marketplace_star", symbols.star)
 	vim.fn.matchadd("marketplace_issue", symbols.issue)
@@ -122,33 +129,33 @@ function ui.set_text(text, buf)
 end
 
 ui.buf_action = function()
-	local symbols = require("marketplace.parser").symbols
+	local symbols = parser.symbols
 	local on_line = vim.api.nvim_get_current_line()
 	if string.find(on_line, symbols.pkg) and string.find(on_line, symbols.star) then
 		-- plugin line
-		ui.action(string.match(on_line, symbols.pkg .. " %s([^%s]+)"))
+		ui.action(string.match(on_line, symbols.pkg .. "%s[\128-\255]*([^%s]+)"))
 	elseif string.find(on_line, symbols.time) and string.find(on_line, symbols.issue) then
 		-- issue & update time line
 		-- get the line above
 		on_line = vim.api.nvim_buf_get_lines(
-			0,
+			ui.sidebuf,
 			vim.api.nvim_win_get_cursor(0)[1] - 2,
 			vim.api.nvim_win_get_cursor(0)[1] - 1,
 			false
 		)[1]
-		ui.action(string.match(on_line, symbols.pkg .. " %s([^%s]+)"))
+		ui.action(string.match(on_line, symbols.pkg .. "%s[\128-\255]*([^%s]+)"))
 	elseif string.find(on_line, symbols.separator) then
 		-- separator, do nothing
 	else
 		-- description line
 		-- get the line 2 lines above
 		on_line = vim.api.nvim_buf_get_lines(
-			0,
+			ui.sidebuf,
 			vim.api.nvim_win_get_cursor(0)[1] - 3,
 			vim.api.nvim_win_get_cursor(0)[1] - 2,
 			false
 		)[1]
-		ui.action(string.match(on_line, symbols.pkg .. " %s([^%s]+)"))
+		ui.action(string.match(on_line, symbols.pkg .. "%s[\128-\255]*([^%s]+)"))
 	end
 end
 function ui.insert_mappings()
@@ -156,8 +163,9 @@ function ui.insert_mappings()
 		ui.sidebuf,
 		"n",
 		"<CR>",
-		"<CMD>lua require('marketplace.ui').buf_action<CR>",
+		"<CMD>lua require('marketplace.ui').buf_action()<CR>",
 		{ noremap = true, silent = true }
 	)
+	vim.api.nvim_buf_set_keymap(ui.popupbuf, "n", "q", "<CMD>q<CR>", { noremap = true, silent = true })
 end
 return ui

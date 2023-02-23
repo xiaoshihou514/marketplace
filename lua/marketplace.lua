@@ -18,7 +18,7 @@ local ui = require("marketplace.ui")
 -- 	},
 -- 	sizes = {
 -- 		side = {
--- 			width = 40,
+-- 			width = 42,
 -- 		},
 -- 		popup = {
 -- 			height = 35,
@@ -36,71 +36,47 @@ local ui = require("marketplace.ui")
 -- }
 
 function M.setup(opts)
-	-- configuration goes here
-	if opts == nil then
+	if not opts then
 		return
 	end
-	if opts.symbols ~= nil then
-		local o = opts.symbols
-		local d = parser.symbols
-		if o.pkg ~= nil then
-			d.pkg = o.pkg
-		end
-		if o.star ~= nil then
-			d.star = o.star
-		end
-		if o.issue ~= nil then
-			d.issue = o.issue
-		end
-		if o.time ~= nil then
-			d.time = o.time
-		end
-		if o.separator ~= nil then
-			d.separator = o.separator
-		end
+	local symbols = opts.symbols
+	if symbols then
+		local parser_symbols = parser.symbols
+		parser_symbols.pkg = symbols.pkg or parser_symbols.pkg
+		parser_symbols.star = symbols.star or parser_symbols.star
+		parser_symbols.issue = symbols.issue or parser_symbols.issue
+		parser_symbols.time = symbols.time or parser_symbols.time
+		parser_symbols.separator = symbols.separator or parser_symbols.separator
 	end
-	if opts.sizes ~= nil then
-		local o = opts.sizes
-		local d = ui.sizes
-		if o.side ~= nil then
-			if o.side.width ~= nil then
-				d.side.width = o.side.width
-			end
-		end
-		if o.popup ~= nil then
-			if o.popup.height ~= nil and o.popup.width ~= nil then
-				d.popup.height = o.popup.height
-				d.popup.width = o.popup.width
-			end
-		end
+	local sizes = opts.sizes
+	if sizes then
+		local ui_sizes = ui.sizes
+		ui_sizes.side.width = sizes.side and sizes.side.width or ui_sizes.side.width
+		ui_sizes.popup.height = sizes.popup and sizes.popup.height or ui_sizes.popup.height
+		ui_sizes.popup.width = sizes.popup and sizes.popup.width or ui_sizes.popup.width
 	end
-	if opts.highlight ~= nil then
-		local o = opts.colors
-		local d = ui.colors
-		if o.pkg ~= nil then
-			d.pkg = o.pkg
-		end
-		if o.star ~= nil then
-			d.star = o.star
-		end
-		if o.issue ~= nil then
-			d.issue = o.issue
-		end
-		if o.time ~= nil then
-			d.time = o.time
-		end
+	local highlight = opts.highlight
+	if highlight then
+		local ui_colors = ui.colors
+		ui_colors.pkg = highlight.pkg or ui_colors.pkg
+		ui_colors.star = highlight.star or ui_colors.star
+		ui_colors.issue = highlight.issue or ui_colors.issue
+		ui_colors.time = highlight.time or ui_colors.time
 	end
-	if opts.curl ~= nil then
-		remote.curl = opts.curl
-	end
-	if opts.readme_action ~= nil then
-		parser.proc_readme = opts.readme_action
-	end
+	remote.curl = opts.curl or remote.curl
+	parser.proc_readme = opts.readme_action or parser.proc_readme
 end
 
 function M.open()
+	local flag = 0
+	for _, _ in ipairs(vim.fn.win_findbuf("Marketplace")) do
+		flag = flag + 1
+	end
+	if flag ~= 0 then
+		return
+	end
 	if M.cache.raw_str == nil or M.cache.raw_str == "" then
-		vim.notify("Pulling plugin list...", vim.log.levels.INFO)
+		vim.notify("Pulling plugin list, this should take a while...", vim.log.levels.WARN)
 		M.cache.raw_str = remote.request(remote.url_list.plugins)
 	end
 	if M.cache.formatted_line == nil then
@@ -110,7 +86,7 @@ function M.open()
 	ui.create_hl_groups()
 	ui.spawn_side(M.cache.formatted_line)
 	ui.highlight_glyphs()
-	ui.insert_mappings(ui.buf_action())
+	ui.insert_mappings()
 end
 
 return M

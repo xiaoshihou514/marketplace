@@ -7,7 +7,7 @@ remote.url_list = {
 	tags = "https://nvim.sh/t",
 	search_plugin = "https://nvim.sh/s/",
 	search_tag = "https://nvim.sh/t/",
-	rawgit = "https://rawgithubusercontent.com/",
+	rawgit = "https://raw.githubusercontent.com/",
 }
 
 -- basically getting the raw txt

@@ -66,13 +66,20 @@ function parser.to_table(parsed)
 end
 
 -- gets possible README url from author/plugin
-function parser.get_readme(str)
+function parser.get_readme_url(str)
 	local res = {}
+	if str == nil then
+		return
+	end
 	-- return a table of possible readme urls
-	-- https://githubusercontent.com/NvChad/ui/main/README(.*)
-	res:insert(url_list.rawgit .. str .. "/main/README.md")
-	res:insert(url_list.rawgit .. str .. "/main/README")
-	res:insert(url_list.rawgit .. str .. "/main/README.txt")
+	-- https://raw.githubusercontent.com/NvChad/ui/main/README(*)
+	-- https://raw.githubusercontent.com/LunarVim/LunarVim/master/README(*)
+	table.insert(res, url_list.rawgit .. str .. "/master/README.md")
+	table.insert(res, url_list.rawgit .. str .. "/main/README.md")
+	table.insert(res, url_list.rawgit .. str .. "/master/README")
+	table.insert(res, url_list.rawgit .. str .. "/main/README")
+	table.insert(res, url_list.rawgit .. str .. "/master/README.txt")
+	table.insert(res, url_list.rawgit .. str .. "/main/README.txt")
 	return res
 end
 
