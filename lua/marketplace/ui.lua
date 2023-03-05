@@ -81,7 +81,7 @@ function ui.spawn_popup(text)
 	ui.init_buf_if_nil()
 	ui.set_text(text, ui.popupbuf)
 	-- display the buffer
-	vim.api.nvim_open_win(ui.popupbuf, true, create_popup_window_opts(ui.sizes.popup.height, ui.sizes.popup.width))
+	vim.api.nvim_open_term(ui.popupbuf, create_popup_window_opts(ui.sizes.popup.height, ui.sizes.popup.width))
 end
 
 function ui.spawn_side(text)
