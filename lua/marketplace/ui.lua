@@ -82,7 +82,7 @@ function ui.spawn_popup(text)
 	-- ui.set_text(text, ui.popupbuf)
 	-- display the buffer
 	vim.api.nvim_open_win(ui.popupbuf, true, create_popup_window_opts(ui.sizes.popup.height, ui.sizes.popup.width))
-	local id = vim.fn.termopen()
+	local id = vim.fn.termopen("")
 	vim.fn.chansend(id, text)
 end
 
